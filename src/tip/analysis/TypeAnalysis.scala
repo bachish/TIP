@@ -101,34 +101,52 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
   def visit(node: AstNode, arg: Unit): Unit = {
     log.verb(s"Visiting ${node.getClass.getSimpleName} at ${node.loc}")
     node match {
-      case program: AProgram => ??? // <--- Complete here
-      case _: ANumber => ??? // <--- Complete here
-      case _: AInput => ??? // <--- Complete here
-      case is: AIfStmt => ??? // <--- Complete here
-      case os: AOutputStmt => ??? // <--- Complete here
-      case ws: AWhileStmt => ??? // <--- Complete here
+      case program: AProgram => unify(node, AbsentFieldType)
+      case _: ANumber => unify(node, IntType())
+      case _: AInput => unify(node, IntType())
+      //if(E) {S} --> [|E|] = int
+      case is: AIfStmt => unify(is.guard, IntType())
+      case os: AOutputStmt => unify(os.exp, IntType())
+      case ws: AWhileStmt => unify(ws.guard, IntType())
       case as: AAssignStmt =>
         as.left match {
-          case id: AIdentifier => ??? // <--- Complete here
+          case id: AIdentifier => unify(id, as.right)
           case dw: ADerefWrite => ??? // <--- Complete here
           case dfw: ADirectFieldWrite => ??? // <--- Complete here
           case ifw: AIndirectFieldWrite => ??? // <--- Complete here
         }
       case bin: ABinaryOp =>
         bin.operator match {
-          case Eqq => ??? // <--- Complete here
-          case _ => ??? // <--- Complete here
+          case Eqq =>
+            unify(node, IntType())
+            unify(bin.left, bin.right)
+          case _ =>
+            unify(node, IntType())
+            unify(bin.left, IntType())
+            unify(bin.right, IntType())
         }
       case un: AUnaryOp =>
         un.operator match {
-          case DerefOp => ??? // <--- Complete here
+          //The dereference operator, also known as the indirection operator,
+          // is a symbol used in programming languages to access the value
+          // stored at the memory address pointed to by a pointer
+          //in TIP it is a `*` operator
+          case DerefOp => unify(un.subexp, PointerType(node))
         }
-      case alloc: AAlloc => ??? // <--- Complete here
-      case ref: AVarRef => ??? // <--- Complete here
-      case _: ANull => ??? // <--- Complete here
-      case fun: AFunDeclaration => ??? // <--- Complete here
-      case call: ACallFuncExpr => ??? // <--- Complete here
-      case _: AReturnStmt =>
+      case alloc: AAlloc => ???
+      //&<identifier>
+      //*E = &[|*E|]
+      case ref: AVarRef => unify(node, PointerType(node))
+      case _: ANull => unify(node, AbsentFieldType)
+      //f(X1 ,. . .,XN ) {. . . return E ;} -->
+      // [|f|] = ( [|X1|] ,. . ., [|XN|] ) -> [|E|]
+      case fun: AFunDeclaration => unify(node,
+        FunctionType(fun.params, fun.stmts.ret.exp))
+      //(E)(E1 ,. . .,EN ) -->
+      //[|E|] = ([|E1|],...,[|EN|]) -> [|(E)(E1,..,EN)|]
+      case call: ACallFuncExpr => unify(node,
+        FunctionType(call.args, call.targetFun))
+      case _: AReturnStmt => unify(node, AbsentFieldType)
       case rec: ARecord =>
         val fieldmap = rec.fields.foldLeft(Map[String, Term[Type]]()) { (a, b) =>
           a + (b.field -> b.exp)
