@@ -24,7 +24,7 @@ class UnionFindSolver[A] {
     * When unifying a variable and a non-variable term, the non-variable term has higher priority for becoming the representative.
     */
   def unify(t1: Term[A], t2: Term[A]): Unit = {
-    log.verb(s"Unifying $t1 and $t2")
+    log.debug(s"Unifying $t1 and $t2")
 
     mkSet(t1)
     mkSet(t2)
@@ -44,7 +44,7 @@ class UnionFindSolver[A] {
         mkUnion(f1, f2)
         f1.args.zip(f2.args).foreach {
           case (a1, a2) =>
-            log.verb(s"Unifying subterms $a1 and $a2")
+            log.debug(s"Unifying subterms $a1 and $a2")
             unify(a1, a2)
         }
       case (x, y) =>
@@ -59,8 +59,10 @@ class UnionFindSolver[A] {
     */
   def find(t: Term[A]): Term[A] = {
     mkSet(t)
-    if (parent(t) != t)
-      parent += t -> find(parent(t))
+    if (parent(t) != t) {
+      val prnt = find(parent(t))
+      parent += t -> prnt
+    }
     parent(t)
   }
 

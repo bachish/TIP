@@ -32,7 +32,7 @@ object Output {
     val pw = new PrintWriter(outFile, "UTF-8")
     pw.write(content)
     pw.close()
-    log.info(s"Results of $kind analysis of $file written to $outFile")
+    log.debug(s"Results of $kind analysis of $file written to $outFile")
   }
 
   /**

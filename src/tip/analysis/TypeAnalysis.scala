@@ -73,7 +73,7 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
     // close the terms and create the TypeData
     new DepthFirstAstVisitor[Unit] {
       val sol: Map[Var[Type], Term[Type]] = solver.solution()
-      log.info(s"Solution (not yet closed):\n${sol.map { case (k, v) => s"  \u27E6$k\u27E7 = $v" }.mkString("\n")}")
+      log.debug(s"Solution (not yet closed):\n${sol.map { case (k, v) => s"  \u27E6$k\u27E7 = $v" }.mkString("\n")}")
       val freshvars: mutable.Map[Var[Type], Var[Type]] = mutable.Map()
       visit(program, ())
 
@@ -89,7 +89,7 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
       }
     }
 
-    log.info(s"Inferred types:\n${ret.map { case (k, v) => s"  \u27E6$k\u27E7 = ${v.get}" }.mkString("\n")}")
+    log.debug(s"Inferred types:\n${ret.map { case (k, v) => s"  \u27E6$k\u27E7 = ${v.get}" }.mkString("\n")}")
     ret
   }
 
@@ -102,7 +102,8 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
     log.verb(s"Visiting ${node.getClass.getSimpleName} at ${node.loc}")
     node match {
       case program: AProgram =>
-      case num: ANumber => unify(num, IntType())
+      case num: ANumber =>
+        unify(num, IntType())
       case inp: AInput => unify(inp, IntType())
       //if(E) {S} --> [E] = int
       case is: AIfStmt => unify(is.guard, IntType())
@@ -116,6 +117,8 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
           case dw: ADerefWrite => unify(dw.exp, PointerType(as.right))
           //X.Y = E -- ?
           case dfw: ADirectFieldWrite => ???
+          //X = &a
+          //y = X.b
           case ifw: AIndirectFieldWrite => ???
         }
       case bin: ABinaryOp =>
@@ -137,7 +140,8 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
           case DerefOp => unify(un.subexp, PointerType(node))
         }
       //alloc --> &\alpha
-      case alloc: AAlloc => unify(node, PointerType(FreshVarType()))
+      case alloc: AAlloc =>
+        unify(alloc, PointerType(FreshVarType()))
       //&<identifier> --> [&E] = &[E]
       case ref: AVarRef => unify(node, PointerType(ref.id))
       //null --> [null] = &\alpha
@@ -168,7 +172,7 @@ class TypeAnalysis(program: AProgram)(implicit declData: DeclarationData) extend
   }
 
   private def unify(t1: Term[Type], t2: Term[Type]): Unit = {
-    log.verb(s"Generating constraint $t1 = $t2")
+    log.debug(s"Generating constraint $t1 = $t2")
     solver.unify(t1, t2)
   }
 }

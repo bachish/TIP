@@ -1,5 +1,14 @@
-# TIP
+# TIP Homeworks
 
+Repository with implementation of homeworks with TIP. 
+
+Build project with `Getting started` instruction below.
+
+Implemented analysis:
+
+* *Types analysis* run all tests with `./tip -types -debug examples/type_analysis`
+
+## TIP
 TIP is a tiny imperative programming language aimed at teaching the
 fundamental concepts of static program analysis. This code accompanies the
 lecture notes on [Static Program Analysis](http://cs.au.dk/~amoeller/spa/).

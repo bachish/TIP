@@ -87,13 +87,16 @@ class RunOption {
       true
 }
 
+
+
 /**
   * Command-line entry for the TIP system.
   */
 object Tip extends App {
 
   val log = Log.logger[this.type]()
-
+  val errorCode = 1
+  var isError = false
   def printUsage() =
     print("""
         | Usage:
@@ -158,7 +161,7 @@ object Tip extends App {
   /**
     * Process the given file according to the specified options.
     */
-  def processFile(file: File, options: RunOption) = {
+  def processFile(file: File, options: RunOption): Int = {
     try {
       val program = {
         val bs = Source.fromFile(file)
@@ -176,12 +179,15 @@ object Tip extends App {
 
       res match {
         case Failure(e: ParseError) =>
+          if(isError) return 0
           log.error(s"Failure parsing the program: $file\n${tipParser.formatError(e)}")
-          sys.exit(1)
+          1
         case Failure(e: Throwable) =>
+          if(isError) return 0
           log.error(s"Failure parsing the program: $file", e)
-          sys.exit(1)
+          1
         case Success(parsedNode: AProgram) =>
+          if(isError) return 1
           val programNode =
             if (options.normalizer == NoNormalizer) parsedNode
             else {
@@ -299,15 +305,18 @@ object Tip extends App {
           if (options.concolic) {
             log.verb("Starting ConcolicEngine")
             new ConcolicEngine(programNode).test()
+            1
           }
+          else 0
       }
     } catch {
       case e: TipProgramException =>
+        if(isError) return 0
         log.error(e.getMessage)
-        sys.exit(1)
+        1
       case e: Exception =>
         log.error(s"Internal error: ${e.getMessage}", e)
-        sys.exit(1)
+        1
     }
   }
 
@@ -351,6 +360,9 @@ object Tip extends App {
         case "-verbose" =>
           Log.defaultLevel = Log.Level.Verbose
           log.level = Log.Level.Verbose
+        case "-debug" =>
+          Log.defaultLevel = Log.Level.Debug
+          log.level = Log.Level.Debug
         case _ =>
           log.error(s"Unrecognized option $s")
           printUsage()
@@ -380,11 +392,18 @@ object Tip extends App {
     Array(options.source)
   }
   options.out.mkdirs()
-
+  var errorCounter = 0
+  var testCounter = 0
   // process each source file
   sources.foreach { file =>
-    log.info(s"Processing ${file.getName}")
-    processFile(file, options)
+    val fileName = file.getName
+    log.info(s"Processing ${fileName}")
+    isError = fileName.startsWith("err_")
+    if(processFile(file, options) == 1 && !isError){
+      errorCounter += 1
+    }
+    testCounter +=1
   }
+  log.info(s"Errors: $errorCounter/$testCounter")
 
 }
