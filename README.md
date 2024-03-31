@@ -6,7 +6,7 @@ Build project with `Getting started` instruction below.
 
 Implemented analysis:
 
-* *Types analysis* run all tests with `./tip -types -debug examples/type_analysis`
+* **Types analysis** run all tests with `./tip -types examples/type_analysis`
 
 ## TIP
 TIP is a tiny imperative programming language aimed at teaching the
