@@ -7,6 +7,7 @@ Build project with `Getting started` instruction below.
 Implemented analysis:
 
 * **Types analysis** run all tests with `./tip -types examples/type_analysis`
+* **Sign analysis** run all tests with `./tip  -sign examples/sign_analysis`
 
 ## TIP
 TIP is a tiny imperative programming language aimed at teaching the

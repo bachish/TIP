@@ -1,13 +1,11 @@
 package tip.analysis
 
+import tip.ast.AstNodeData.DeclarationData
+import tip.ast._
 import tip.cfg.CfgOps._
 import tip.cfg.{CfgNode, CfgStmtNode, ProgramCfg}
 import tip.lattices.{MapLattice, SignLattice}
-import tip.ast.AstNodeData.DeclarationData
-import tip.ast._
 import tip.solvers.FixpointSolvers
-
-import scala.collection.immutable.Set
 
 /**
   * Simple intra-procedural sign analysis.
@@ -85,10 +83,19 @@ class SimpleSignAnalysis(cfg: ProgramCfg)(implicit declData: DeclarationData) ex
       case r: CfgStmtNode =>
         r.data match {
           // var declarations
-          case varr: AVarStmt => ??? //<--- Complete here
+          //[|var x;|] = JOIN(n)[x → ?]
+          case varr: AVarStmt =>
+            //all variables add in map at first time with value `bottom` (sign ?)
+
+            //addition of element create a new map,
+            //so store  ids in temporary map
+            s ++ varr.declIds.map { it => (it, SignLattice.bottom)}.toMap
 
           // assignments
-          case AAssignStmt(id: AIdentifier, right, _) => ??? //<--- Complete here
+          //[|x = E;|] = JOIN(n)[x → eval(JOIN(n), E)]
+          case AAssignStmt(id: AIdentifier, right, _) =>
+            //variable already in map, so update it
+            s.updated(id, eval(right, s))
 
           // all others: like no-ops
           case _ => s

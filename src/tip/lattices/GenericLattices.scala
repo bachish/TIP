@@ -141,18 +141,21 @@ class MapLattice[A, +L <: Lattice](val sublattice: L) extends Lattice {
 
 /**
   * The powerset lattice of a set of elements of type `A` with subset ordering.
+ *  Powerset is the set whose elements are all of the subsets of S.
+ *  Subset ordering it's a ⊆ relation
   */
 class PowersetLattice[A] extends Lattice {
 
   type Element = Set[A]
 
-  val bottom: Element = ??? //<--- Complete here
+  val bottom: Element = Set()
 
-  def lub(x: Element, y: Element): Element = ??? //<--- Complete here
+  def lub(x: Element, y: Element): Element = x union y
 }
 
 /**
   * The powerset lattice of the given set of elements of type `A` with superset ordering.
+  * Superset is the reverse relationship of a subset (⊇)
   */
 class ReversePowersetLattice[A](s: Set[A]) extends Lattice {
 
