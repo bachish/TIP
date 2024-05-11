@@ -1,0 +1,15 @@
+main() {
+    var pos, neg, top, zero;
+    var later;
+    pos = 5 + 5;
+    pos = 5 * 5;    
+    neg = -5 - 5;
+    neg = -5 * 5;
+    neg = 5 * -5;
+    top = 5 - 5;
+    top = top * 5;
+    zero = top * 0;
+    zero = 5 * zero;
+    later = 7;
+    return 0;
+}
