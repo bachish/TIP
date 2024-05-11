@@ -8,6 +8,8 @@ Implemented analysis:
 
 * **Types analysis** run all tests with `./tip -types examples/type_analysis`
 * **Sign analysis** run all tests with `./tip  -sign examples/sign_analysis`
+* **Live variables analysis** run all tests with `./tip  -livevars examples/live_analysis`
+* **Reaching definitions analysis** run all tests with `./tip  -reaching examples/defs_analysis`
 
 ## TIP
 TIP is a tiny imperative programming language aimed at teaching the

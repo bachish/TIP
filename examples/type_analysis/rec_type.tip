@@ -1,0 +1,6 @@
+main() {
+    var p, b;
+    p = alloc 0;
+    *p = p;
+    return 0;
+}
